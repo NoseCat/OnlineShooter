@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dnsl8ung28jy1"]
+
+[ext_resource type="Texture2D" uid="uid://ba2rmkh84dx6o" path="res://textures/ChekerBoard2.png" id="1_g6qxi"]
+
+[resource]
+albedo_texture = ExtResource("1_g6qxi")
+uv1_triplanar = true
+texture_filter = 0
