@@ -9,6 +9,8 @@
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_a4hy7"]
 
+[sub_resource type="SphereMesh" id="SphereMesh_a4hy7"]
+
 [node name="player" type="CharacterBody3D" unique_id=432555739]
 script = ExtResource("1_a4hy7")
 
@@ -25,3 +27,7 @@ script = ExtResource("1_rpe43")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1309803868]
 replication_config = SubResource("SceneReplicationConfig_a4hy7")
+
+[node name="test" type="MeshInstance3D" parent="." unique_id=2054865233]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.126647)
+mesh = SubResource("SphereMesh_a4hy7")

@@ -4,6 +4,8 @@ extends CharacterBody3D
 const SPEED = 5.0
 const JUMP_VELOCITY = 4.5
 
+var test
+
 func _ready() -> void:
 	#setting up Syncronizer so it knows what properties to copy
 	$MultiplayerSynchronizer.root_path = ".."
@@ -15,6 +17,7 @@ func _ready() -> void:
 	if not is_multiplayer_authority():
 		return
 	$Camera3D.current = true
+	test = $test
 
 func _physics_process(delta: float) -> void:
 	if not is_multiplayer_authority():
@@ -22,7 +25,7 @@ func _physics_process(delta: float) -> void:
 	# Add the gravity.
 	if not is_on_floor():
 		velocity += get_gravity() * delta
-
+	
 	# Handle jump.
 	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
@@ -37,5 +40,16 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
-
+		
+	if(Input.is_action_just_pressed("LMB")):
+		rpc("click")
+	
 	move_and_slide()
+
+@rpc("any_peer", "call_local")
+func click():
+#	if not is_multiplayer_authority():
+#		return
+	#test.mesh.radius = 0.1
+	print(get_multiplayer_authority())
+	print(is_multiplayer_authority())

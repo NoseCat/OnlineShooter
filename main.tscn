@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://brnf3jyogsw21"]
 
-[ext_resource type="Script" uid="uid://bg7auu1x2mqaj" path="res://Main.cs" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://dtrgnyxignafb" path="res://network_code/Main.cs" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://blycldydgkgiw" path="res://maps/mp_tower.tscn" id="2_0xm2m"]
 
 [node name="main" type="Node3D" unique_id=2055168424]
-script = ExtResource("1_ig7tw")
+script = ExtResource("1_0xm2m")
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=815064769]
 _spawnable_scenes = PackedStringArray("uid://b0k4hqbhv06n4")
