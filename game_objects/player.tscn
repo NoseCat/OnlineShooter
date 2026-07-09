@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cnhe5hdfxxjac" path="res://game_objects/player.gd" id="1_a4hy7"]
 [ext_resource type="Script" uid="uid://c6f8tvl8wxpp7" path="res://game_objects/player_camera_movement.gd" id="1_rpe43"]
+[ext_resource type="PackedScene" uid="uid://lx77p6dqb5vk" path="res://game_objects/beam.tscn" id="2_7o085"]
+[ext_resource type="Script" uid="uid://cfleitaasttcl" path="res://game_objects/health_bar.gd" id="3_hy5qn"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_a4hy7"]
 
@@ -11,8 +13,17 @@
 
 [sub_resource type="SphereMesh" id="SphereMesh_a4hy7"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hy5qn"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hy5qn"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_hy5qn")
+size = Vector3(0.1, 0.1, 0.1)
+
 [node name="player" type="CharacterBody3D" unique_id=432555739]
 script = ExtResource("1_a4hy7")
+beam_scene = ExtResource("2_7o085")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2132864441]
 shape = SubResource("CapsuleShape3D_a4hy7")
@@ -25,9 +36,72 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 fov = 90.0
 script = ExtResource("1_rpe43")
 
+[node name="RayCast3D" type="RayCast3D" parent="Camera3D" unique_id=1074149861]
+target_position = Vector3(0, 0, -10)
+
+[node name="Marker3D" type="Marker3D" parent="Camera3D" unique_id=965782319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1309803868]
 replication_config = SubResource("SceneReplicationConfig_a4hy7")
 
 [node name="test" type="MeshInstance3D" parent="." unique_id=2054865233]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2.126647)
+visible = false
 mesh = SubResource("SphereMesh_a4hy7")
+
+[node name="Health" type="Node3D" parent="." unique_id=1095953742]
+script = ExtResource("3_hy5qn")
+
+[node name="Control" type="Control" parent="Health" unique_id=1404149440]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="ColorRect" type="ColorRect" parent="Health/Control" unique_id=937307014]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_top = -20.5
+offset_right = 13.735001
+offset_bottom = 20.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(0, 20.5)
+color = Color(1, 0, 0, 1)
+
+[node name="Label" type="Label" parent="Health/Control" unique_id=1958738192]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -19.0
+offset_right = 20.0
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Health3d" type="MeshInstance3D" parent="Health" unique_id=655486080]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.333859, -0.015278339)
+mesh = SubResource("BoxMesh_hy5qn")
+
+[node name="Label3D" type="Label3D" parent="Health/Health3d" unique_id=1129427651]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -0.033858955, -0.084721684)
+text = "50
+"
