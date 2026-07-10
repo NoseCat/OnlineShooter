@@ -9,9 +9,7 @@ var health = max_health
 
 var test
 
-# ... your existing variables ...
-
-@export var beam_scene: PackedScene  # assign Beam.tscn in the inspector
+@export var particles_scene: PackedScene 
 
 func _ready() -> void:
 	#setting up Syncronizer so it knows what properties to copy
@@ -70,8 +68,7 @@ func click():
 	var from = $Camera3D.global_position
 	var to = $Camera3D/RayCast3D.get_collision_point()
 
-#do particles instead
-	rpc("spawn_beam", from, to)
+	spawn_particles.rpc(from, to)
 
 	var collider = $Camera3D/RayCast3D.get_collider()
 
@@ -80,10 +77,10 @@ func click():
 
 # RPC to spawn beam on all peers
 @rpc("any_peer", "call_local")
-func spawn_beam(start: Vector3, end: Vector3):
-	var beam = beam_scene.instantiate()
-	get_tree().root.add_child(beam)  # add to root so it's not affected by parent transform
-	beam.init(start, end)
+func spawn_particles(start: Vector3, end: Vector3):
+	var particles = particles_scene.instantiate()
+	get_tree().root.add_child(particles) 
+	particles.init(start, end)
 
 @rpc("any_peer", "call_local")
 func take_damage(value):

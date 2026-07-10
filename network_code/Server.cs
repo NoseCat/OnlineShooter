@@ -7,18 +7,18 @@ public partial class Main
 
     private void Server()
     {
-        GD.Print("Starting server...");
+        Logger.Log("Server", "Starting server...");
         var peer = new ENetMultiplayerPeer();
 
         Error error = peer.CreateServer(Port);
         if (error != Error.Ok)
         {
-            GD.PrintErr($"Failed to start server: {error}");
+            Logger.Log("Error", $"Failed to start server: {error}");
             return;
         }
 
         Multiplayer.MultiplayerPeer = peer;
-        GD.Print($"Server started on port {Port}");
+        Logger.Log("Server", $"Server started on port {Port}");
 
         Multiplayer.PeerConnected += OnPeerConnected;
         Multiplayer.PeerDisconnected += OnPeerDisconnected;
@@ -26,7 +26,7 @@ public partial class Main
 
     private void OnPeerConnected(long id)
     {
-        GD.Print($"Peer connected: {id}");
+        Logger.Log("Server", $"Peer connected: {id}");
         Node player = spawner.Spawn(id);
         if (player != null)
             players[id] = player;
@@ -34,6 +34,8 @@ public partial class Main
 
     private void OnPeerDisconnected(long id)
     {
-        GD.Print($"Peer disconnected: {id} (did nothing about it)");
+        Logger.Log("Server", $"Peer disconnected: {id}");
+        players[id].QueueFree(); // for clients delition is handled by MultiplayerSpawner
+        players.Remove(id);
     }
 }

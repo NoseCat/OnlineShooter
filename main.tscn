@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dtrgnyxignafb" path="res://network_code/Main.cs" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://blycldydgkgiw" path="res://maps/mp_tower.tscn" id="2_0xm2m"]
 
-[node name="main" type="Node3D" unique_id=2055168424]
+[node name="main" type="Node" unique_id=1889622307]
 script = ExtResource("1_0xm2m")
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=815064769]

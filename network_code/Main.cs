@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Linq;
 
-public partial class Main : Node3D
+public partial class Main : Node
 {
 	private MultiplayerSpawner spawner;
 	private const int Port = 4433;
