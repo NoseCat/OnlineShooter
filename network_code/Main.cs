@@ -7,7 +7,7 @@ public partial class Main : Node
 	private const int Port = 4433;
 	private const string Address = "127.0.0.1";
 
-	MultiplayerSpawner PlayerSpawner;
+	//MultiplayerSpawner PlayerSpawner;
 
 	MultiplayerSynchronizer Synchronizer;
 
@@ -17,12 +17,12 @@ public partial class Main : Node
 		Synchronizer = GetNode<MultiplayerSynchronizer>("LobbySynchronizer");
 		Synchronizer.RootPath = "..";
 		SceneReplicationConfig ReplicationConfig = new();
-		ReplicationConfig.AddProperty(":Lobbies");
+		ReplicationConfig.AddProperty(":LobbyInfo");
 		Synchronizer.ReplicationConfig = ReplicationConfig;
 
 		//for now player spawning is global
-		PlayerSpawner = GetNode<MultiplayerSpawner>("MultiplayerSpawner");
-		PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
+		//PlayerSpawner = GetNode<MultiplayerSpawner>("MultiplayerSpawner");
+		//PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
 
 		if (OS.GetCmdlineArgs().Contains("--server"))
 			Server();

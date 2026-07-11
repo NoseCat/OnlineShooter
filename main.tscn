@@ -9,10 +9,3 @@ script = ExtResource("1_0xm2m")
 
 [node name="LobbySynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=38073778]
 replication_config = SubResource("SceneReplicationConfig_ig7tw")
-
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2123494423]
-_spawnable_scenes = PackedStringArray("uid://b0k4hqbhv06n4")
-spawn_path = NodePath("../PlayerContainer")
-
-[node name="PlayerContainer" type="Node3D" parent="." unique_id=2040875615]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.1207094, 4.074596, 0)

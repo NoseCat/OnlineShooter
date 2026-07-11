@@ -8,5 +8,5 @@ public partial class Lobby : GodotObject
     public string Name { get; set; }
     public int MaxPlayers { get; set; }
     public string Map {get; set;}
-    public Dictionary<int, Node> Players { get; set; } = new();
+    public List<int> Players { get; set; } = new();
 }
