@@ -14,7 +14,12 @@ public partial class Main
             return;
         }
 
+
         Multiplayer.MultiplayerPeer = peer;
         GD.Print("Connected!");
+        
+        //ConnectRoom(0);
     }
+
+
 }

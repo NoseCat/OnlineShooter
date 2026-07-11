@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cfufcrriykmh6"]
+
+[ext_resource type="PackedScene" uid="uid://drt0ox4ejav5g" path="res://maps/mp_2_forts.tscn" id="2_ff6vy"]
+
+[node name="Room" type="Node" unique_id=1648969468]
+
+[node name="Map" type="Node3D" parent="." unique_id=645542856]
+
+[node name="mp_2forts" parent="Map" unique_id=701017570 instance=ExtResource("2_ff6vy")]

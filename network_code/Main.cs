@@ -4,23 +4,32 @@ using System.Linq;
 
 public partial class Main : Node
 {
-	private MultiplayerSpawner spawner;
 	private const int Port = 4433;
 	private const string Address = "127.0.0.1";
 
+	MultiplayerSpawner PlayerSpawner;
+
+	MultiplayerSynchronizer Synchronizer;
+
 	public override void _Ready()
 	{
-		spawner = GetNode<MultiplayerSpawner>("MultiplayerSpawner");
-		spawner.SpawnFunction = new Callable(this, nameof(CustomSpawn));
+		//sync lobby info across all peers
+		Synchronizer = GetNode<MultiplayerSynchronizer>("LobbySynchronizer");
+		Synchronizer.RootPath = "..";
+		SceneReplicationConfig ReplicationConfig = new();
+		ReplicationConfig.AddProperty(":Lobbies");
+		Synchronizer.ReplicationConfig = ReplicationConfig;
+
+		//for now player spawning is global
+		PlayerSpawner = GetNode<MultiplayerSpawner>("MultiplayerSpawner");
+		PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
 
 		if (OS.GetCmdlineArgs().Contains("--server"))
 			Server();
 		else
 			Client();
-
-		
 	}
-	public Node CustomSpawn(Variant data)
+	public Node SpawnPlayer(Variant data)
 	{
 		int id = (int)data;
 		var playerScene = ResourceLoader.Load<PackedScene>("res://game_objects/player.tscn");
