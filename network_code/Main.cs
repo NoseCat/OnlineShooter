@@ -9,20 +9,16 @@ public partial class Main : Node
 
 	//MultiplayerSpawner PlayerSpawner;
 
-	MultiplayerSynchronizer Synchronizer;
+	MultiplayerSynchronizer LobbySynchronizer;
 
 	public override void _Ready()
 	{
 		//sync lobby info across all peers
-		Synchronizer = GetNode<MultiplayerSynchronizer>("LobbySynchronizer");
-		Synchronizer.RootPath = "..";
+		LobbySynchronizer = GetNode<MultiplayerSynchronizer>("LobbySynchronizer");
+		LobbySynchronizer.RootPath = "..";
 		SceneReplicationConfig ReplicationConfig = new();
-		ReplicationConfig.AddProperty(":LobbyInfo");
-		Synchronizer.ReplicationConfig = ReplicationConfig;
-
-		//for now player spawning is global
-		//PlayerSpawner = GetNode<MultiplayerSpawner>("MultiplayerSpawner");
-		//PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
+		ReplicationConfig.AddProperty(":LobbyData");
+		LobbySynchronizer.ReplicationConfig = ReplicationConfig;
 
 		if (OS.GetCmdlineArgs().Contains("--server"))
 			Server();

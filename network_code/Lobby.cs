@@ -1,12 +1,12 @@
 using Godot;
-using System.Collections.Generic;
+using Godot.Collections; // for Array<T>
 
 [GlobalClass]
-public partial class Lobby : GodotObject
+public partial class Lobby : Resource
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int MaxPlayers { get; set; }
-    public string Map {get; set;}
-    public List<int> Players { get; set; } = new();
+    [Export] public int Id { get; set; }
+    [Export] public string Name { get; set; } = "";
+    [Export] public int MaxPlayers { get; set; }
+    [Export] public string Map { get; set; } = "";
+    [Export] public Array<int> Players { get; set; } = new();
 }

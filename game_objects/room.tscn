@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://cfufcrriykmh6"]
 
-[ext_resource type="PackedScene" uid="uid://drt0ox4ejav5g" path="res://maps/mp_2_forts.tscn" id="2_ff6vy"]
+[ext_resource type="Script" uid="uid://cgvxmvgb1oum1" path="res://game_objects/room.gd" id="1_ff6vy"]
 
 [node name="Room" type="Node" unique_id=1648969468]
+script = ExtResource("1_ff6vy")
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2104884762]
 _spawnable_scenes = PackedStringArray("uid://b0k4hqbhv06n4")
@@ -10,7 +11,3 @@ spawn_path = NodePath("../PlayerContainer")
 
 [node name="PlayerContainer" type="Node3D" parent="." unique_id=802996033]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.375959, 6.604573, 0)
-
-[node name="Map" type="Node3D" parent="." unique_id=645542856]
-
-[node name="mp_2forts" parent="Map" unique_id=701017570 instance=ExtResource("2_ff6vy")]

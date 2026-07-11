@@ -5,8 +5,10 @@ public partial class Main
 {
     //private readonly Dictionary<long, Node> players = new(); //global list of players
 
+    //[Export]
+    //public Godot.Collections.Array<Lobby> LobbyInfo { get; set; } = new();
     [Export]
-    public Godot.Collections.Array<Lobby> LobbyInfo { get; set; } = new();
+    public Godot.Collections.Array<Godot.Collections.Dictionary> LobbyData { get; set; } = new();
     private int nextLobbyId = 1;
 
     private void Server()
@@ -26,56 +28,68 @@ public partial class Main
         Multiplayer.PeerDisconnected += OnPeerDisconnected;
 
         CreateLobby();
-        //SpawnLobby(0);
     }
 
-    private Lobby CreateLobby()
+    private void CreateLobby()
     {
-        var lobby = new Lobby{Id = 0, Name = "Room_0", MaxPlayers = 5, Map = "mp_2_forts"};
-        LobbyInfo.Add(lobby);
-        
-        var room = AddChildLobby(LobbyInfo[0].Name);
+        var lobbyDict = new Godot.Collections.Dictionary
+        {
+            //["Id"] = 0,
+            ["Name"] = "Room_0",
+            ["MaxPlayers"] = 5,
+            ["Map"] = new[] { "mp_2_forts", "mp_tower" }[GD.Randi() % 2],
+            ["Players"] = new Godot.Collections.Array<int>()  // use Array, not List
+        };
+        LobbyData.Add(lobbyDict);
 
-        LobbyInfo = LobbyInfo; //a hack, needed because sycnronizer will only replicate on setters, allegedly 
+        var room = AddChildLobby(0);
+
         Logger.Log("Server", $"Lobby created.");
-        return lobby;
     }
 
-    private Node AddChildLobby(string name)
+    //
+    private Node AddChildLobby(int lobby_id)
     {
         PackedScene room = ResourceLoader.Load<PackedScene>("res://game_objects/room.tscn");
         Node roomInstance = room.Instantiate();
-        //roomInstance.LoadMap
         AddChild(roomInstance);
-        roomInstance.Name = name;
+
+        roomInstance.Name = LobbyData[lobby_id]["Name"].ToString();
+        roomInstance.Call("load_map", LobbyData[lobby_id]["Map"].ToString());
+
         var PlayerSpawner = roomInstance.GetNode<MultiplayerSpawner>("MultiplayerSpawner");
-		PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
+        PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
         return roomInstance;
     }
 
-    //load static things about map, this assumes we are calling this locally
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)] 
-    private Node SpawnLobby(int player_id, string name)
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private async void SpawnLobby(int player_id, int lobby_id)
     {
-        var room = AddChildLobby(name);
-        return room;
-        
+        await ToSignal(LobbySynchronizer, "synchronized");
+        var room = AddChildLobby(lobby_id);
+        RpcId(1, "SpawnPlayer", player_id, lobby_id);
     }
 
-    //figure out what needs to be sent (visibility, spawning, etc)
-    private async void ConnectRoom(int player_id, int lobby_id)
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private void SpawnPlayer(int player_id, int lobby_id)
     {
-        GD.Print("Enter Room");
-
-        LobbyInfo[lobby_id].Players.Add(player_id);
-        RpcId(player_id, "SpawnLobby", player_id, LobbyInfo[lobby_id].Name);
-
-        await ToSignal(GetTree(), "process_frame"); //triple hack!
-        await ToSignal(GetTree(), "process_frame");
-        await ToSignal(GetTree(), "process_frame");
-
-        var PlayerSpawner = GetNode<MultiplayerSpawner>($"{LobbyInfo[lobby_id].Name}/MultiplayerSpawner");
+        var PlayerSpawner = GetNode<MultiplayerSpawner>($"{LobbyData[lobby_id]["Name"]}/MultiplayerSpawner");
         Node player = PlayerSpawner.Spawn(player_id);
+    }
+
+    private void ConnectRoom(int player_id, int lobby_id)
+    {
+
+        GD.Print("Enter Room");
+        var lobbyDict = LobbyData[lobby_id];
+        var playersArray = lobbyDict["Players"].AsGodotArray<int>();
+        playersArray.Add(player_id);
+        LobbyData[lobby_id] = lobbyDict; //to force sync on nested update
+
+        RpcId(player_id, "SpawnLobby", player_id, lobby_id);
+
+        //await ToSignal(GetTree(), "process_frame"); //triple hack!
+
     }
 
     //server does this when peer connects
@@ -83,7 +97,7 @@ public partial class Main
     {
         Logger.Log("Server", $"Peer connected: {id}");
 
-        ConnectRoom((int)id, 0);
+        //ConnectRoom((int)id, 0);
     }
 
     private void OnPeerDisconnected(long id)

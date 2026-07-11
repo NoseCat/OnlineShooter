@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://brnf3jyogsw21"]
 
 [ext_resource type="Script" uid="uid://dtrgnyxignafb" path="res://network_code/Main.cs" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://c7uv42428wx2e" path="res://main_menu.gd" id="2_0xm2m"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ig7tw"]
 
@@ -9,3 +10,35 @@ script = ExtResource("1_0xm2m")
 
 [node name="LobbySynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=38073778]
 replication_config = SubResource("SceneReplicationConfig_ig7tw")
+
+[node name="MainMenu" type="Control" parent="." unique_id=159654752]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("2_0xm2m")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainMenu" unique_id=2081418483]
+layout_mode = 0
+offset_right = 319.0
+offset_bottom = 263.0
+
+[node name="Label" type="Label" parent="MainMenu/VBoxContainer" unique_id=745531548]
+layout_mode = 2
+text = "Lobby list"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainMenu/VBoxContainer" unique_id=2141496796]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LobbyList" type="VBoxContainer" parent="MainMenu/VBoxContainer/ScrollContainer" unique_id=148664260]
+layout_mode = 2
+
+[node name="JoinButton" type="Button" parent="MainMenu/VBoxContainer" unique_id=1015386334]
+layout_mode = 2
+text = "join
+"
+
+[node name="RefreshButton" type="Button" parent="MainMenu/VBoxContainer" unique_id=1871056396]
+layout_mode = 2
+text = "Refresh"
