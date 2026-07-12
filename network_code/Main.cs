@@ -25,13 +25,14 @@ public partial class Main : Node
 		else
 			Client();
 	}
-	public Node SpawnPlayer(Variant data)
+	public Node SpawnPlayerFunc(Godot.Collections.Dictionary data)
 	{
-		int id = (int)data;
+		int id = (int)data["player_id"];
 		var playerScene = ResourceLoader.Load<PackedScene>("res://game_objects/player.tscn");
 		var player = playerScene.Instantiate<CharacterBody3D>();
 		player.Name = id.ToString();
-		player.SetMultiplayerAuthority(id, true);
+		//player.SetMultiplayerAuthority(id);
+		player.Set("lobby_id", data["lobby_id"]);
 		return player;
 	}
 

@@ -5,11 +5,9 @@ public partial class Main
 {
     //private readonly Dictionary<long, Node> players = new(); //global list of players
 
-    //[Export]
-    //public Godot.Collections.Array<Lobby> LobbyInfo { get; set; } = new();
     [Export]
     public Godot.Collections.Array<Godot.Collections.Dictionary> LobbyData { get; set; } = new();
-    private int nextLobbyId = 1;
+    private int nextLobbyId = 0;
 
     private void Server()
     {
@@ -28,21 +26,37 @@ public partial class Main
         Multiplayer.PeerDisconnected += OnPeerDisconnected;
 
         CreateLobby();
+        CreateLobby();
+        CreateLobby();
+        CreateLobby();
+        CreateLobby();
+    }
+
+    //us this to get proper id from LobbyData, otherwise we cant be certain of prper id
+    //LobbyData[GetLobbyIndexById(id)]  what are we even doing 
+    private int GetLobbyIndexById(int id)
+    {
+        for (int i = 0; i < LobbyData.Count; i++)
+        {
+            if (LobbyData[i]["Id"].AsInt32() == id)
+                return i;
+        }
+        return -1;
     }
 
     private void CreateLobby()
     {
         var lobbyDict = new Godot.Collections.Dictionary
         {
-            //["Id"] = 0,
-            ["Name"] = "Room_0",
+            ["Id"] = nextLobbyId,
+            ["Name"] = "Room_" + nextLobbyId,
             ["MaxPlayers"] = 5,
             ["Map"] = new[] { "mp_2_forts", "mp_tower" }[GD.Randi() % 2],
-            ["Players"] = new Godot.Collections.Array<int>()  // use Array, not List
+            ["Players"] = new Godot.Collections.Array<int>(),  // use Array, not List
         };
         LobbyData.Add(lobbyDict);
-
-        var room = AddChildLobby(0);
+        var room = AddChildLobby(nextLobbyId);
+        nextLobbyId++;
 
         Logger.Log("Server", $"Lobby created.");
     }
@@ -54,11 +68,16 @@ public partial class Main
         Node roomInstance = room.Instantiate();
         AddChild(roomInstance);
 
-        roomInstance.Name = LobbyData[lobby_id]["Name"].ToString();
-        roomInstance.Call("load_map", LobbyData[lobby_id]["Map"].ToString());
+        roomInstance.Name = LobbyData[GetLobbyIndexById(lobby_id)]["Name"].ToString();
+        roomInstance.Call("load_map", LobbyData[GetLobbyIndexById(lobby_id)]["Map"].ToString());
+
+        //var roomMultiplayer = new SceneMultiplayer();
+        //roomMultiplayer.MultiplayerPeer = Multiplayer.MultiplayerPeer;
+        //GetTree().SetMultiplayer(roomMultiplayer, roomInstance.GetPath());
 
         var PlayerSpawner = roomInstance.GetNode<MultiplayerSpawner>("MultiplayerSpawner");
-        PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayer));
+        PlayerSpawner.SpawnFunction = new Callable(this, nameof(SpawnPlayerFunc));
+        PlayerSpawner.SpawnPath = roomInstance.GetPath() + "/PlayerContainer";
         return roomInstance;
     }
 
@@ -67,37 +86,44 @@ public partial class Main
     {
         await ToSignal(LobbySynchronizer, "synchronized");
         var room = AddChildLobby(lobby_id);
-        RpcId(1, "SpawnPlayer", player_id, lobby_id);
+        //room.Multiplayer.MultiplayerPeer = Multiplayer.MultiplayerPeer;
+        //RpcId(1, "SpawnPlayer", player_id, lobby_id);
     }
 
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
-    private void SpawnPlayer(int player_id, int lobby_id)
+    private Node SpawnPlayer(int player_id, int lobby_id)
     {
-        var PlayerSpawner = GetNode<MultiplayerSpawner>($"{LobbyData[lobby_id]["Name"]}/MultiplayerSpawner");
-        Node player = PlayerSpawner.Spawn(player_id);
+        var PlayerSpawner = GetNode<MultiplayerSpawner>($"./{LobbyData[GetLobbyIndexById(lobby_id)]["Name"]}/MultiplayerSpawner");
+        var spawnData = new Godot.Collections.Dictionary
+        {
+            ["player_id"] = player_id,
+            ["lobby_id"] = lobby_id
+        };
+
+        return PlayerSpawner.Spawn(spawnData);
     }
 
-    private void ConnectRoom(int player_id, int lobby_id)
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private async void ConnectRoom(int player_id, int lobby_id)
     {
-
         GD.Print("Enter Room");
-        var lobbyDict = LobbyData[lobby_id];
+        var lobbyDict = LobbyData[GetLobbyIndexById(lobby_id)];
         var playersArray = lobbyDict["Players"].AsGodotArray<int>();
         playersArray.Add(player_id);
-        LobbyData[lobby_id] = lobbyDict; //to force sync on nested update
+        LobbyData[GetLobbyIndexById(lobby_id)] = lobbyDict; //to force sync on nested update
 
         RpcId(player_id, "SpawnLobby", player_id, lobby_id);
-
-        //await ToSignal(GetTree(), "process_frame"); //triple hack!
-
+        for (int i = 0; i < 30; i++)
+            await ToSignal(GetTree(), "process_frame");
+        var player = SpawnPlayer(player_id, lobby_id);
+        //player.SetMultiplayerAuthority(player_id, true); //MUST BE SET AFTER PLAYER SPAWNS OR 2^82 KITTENS WILL DIE INSTANTLY
+        //player.SetMultiplayerAuthority(1);
     }
 
     //server does this when peer connects
     private void OnPeerConnected(long id)
     {
         Logger.Log("Server", $"Peer connected: {id}");
-
-        //ConnectRoom((int)id, 0);
     }
 
     private void OnPeerDisconnected(long id)

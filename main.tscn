@@ -20,8 +20,8 @@ script = ExtResource("2_0xm2m")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MainMenu" unique_id=2081418483]
 layout_mode = 0
-offset_right = 319.0
-offset_bottom = 263.0
+offset_right = 474.0
+offset_bottom = 355.0
 
 [node name="Label" type="Label" parent="MainMenu/VBoxContainer" unique_id=745531548]
 layout_mode = 2
@@ -42,3 +42,7 @@ text = "join
 [node name="RefreshButton" type="Button" parent="MainMenu/VBoxContainer" unique_id=1871056396]
 layout_mode = 2
 text = "Refresh"
+
+[node name="CreateLobby" type="Button" parent="MainMenu/VBoxContainer" unique_id=884815312]
+layout_mode = 2
+text = "CreateLobby"

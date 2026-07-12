@@ -18,7 +18,6 @@ public partial class Main
         Multiplayer.MultiplayerPeer = peer;
         GD.Print("Connected!");
         
-        //ConnectRoom(0);
     }
 
 

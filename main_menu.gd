@@ -7,6 +7,7 @@ extends Control
 @onready var refresh_btn = $VBoxContainer/RefreshButton
 @onready var join_btn = $VBoxContainer/JoinButton
 
+
 var selected_lobby_id: int = -1
 
 func _ready():
@@ -20,7 +21,6 @@ func _ready():
 
 # Clears and rebuilds the lobby list from the server's data
 func _refresh_lobby_list():
-	print("LobbyData size: ", main_node.LobbyData.size())
 	# Clear existing buttons
 	for child in lobby_list.get_children():
 		child.queue_free()
@@ -35,16 +35,17 @@ func _refresh_lobby_list():
 	# Create a button for each lobby
 	for i in range(lobby_data.size()):
 		var lobby_dict = lobby_data[i]
-		var lobby_id = i  # or use a custom "Id" field if available
+		var lobby_id =  lobby_dict.get("Id")
 		var lobby_name = lobby_dict.get("Name", "Unnamed")
+		var lobby_map = lobby_dict.get("Map")
 		var player_count = lobby_dict.get("Players", []).size()
 		var max_players = lobby_dict.get("MaxPlayers", 0)
 		
 		var btn = Button.new()
-		btn.text = "%s (%d/%d)" % [lobby_name, player_count, max_players]
+		btn.text = "%s (%d/%d) %s" % [lobby_name, player_count, max_players, lobby_map]
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Store the lobby ID in the button's metadata
-		btn.set_meta("lobby_id", lobby_id)
+		btn.name = str(lobby_id)
 		btn.pressed.connect(_on_lobby_button_pressed.bind(btn))
 		lobby_list.add_child(btn)
 	
@@ -61,7 +62,7 @@ func _add_no_lobbies_label():
 # Called when a lobby button is clicked
 func _on_lobby_button_pressed(btn):
 	# Toggle selection: if the same button is clicked again, deselect
-	if selected_lobby_id == btn.get_meta("lobby_id"):
+	if selected_lobby_id == int(btn.name):
 		selected_lobby_id = -1
 		join_btn.disabled = true
 		# Optionally reset button style
@@ -75,25 +76,19 @@ func _on_lobby_button_pressed(btn):
 	
 	# Highlight selected button
 	btn.add_theme_color_override("font_color", Color.YELLOW)
-	selected_lobby_id = btn.get_meta("lobby_id")
+	selected_lobby_id = int(btn.name)
 	join_btn.disabled = false
 
 # Refresh button pressed
 func _on_refresh_pressed():
 	_refresh_lobby_list()
 
-# Join button pressed – calls the C# method (stubbed)
+# Join button pressed – calls the C# method 
 func _on_join_pressed():
 	if selected_lobby_id < 0:
 		return
 	
-	# ---- STUB SECTION ----
-	# The actual call to the C# method would be:
-	# main_node.ConnectRoom( multiplayer.get_unique_id(), selected_lobby_id )
-	# But per your request, we comment it out and print instead.
-	# main_node.ConnectRoom( multiplayer.get_unique_id(), selected_lobby_id )
+	main_node.rpc_id(1, "ConnectRoom",  multiplayer.get_unique_id(), selected_lobby_id )
 	print("Joining lobby ID: ", selected_lobby_id)
-	# -----------------------
 	
-	# Optionally close the menu or switch scene after joining
-	# visible = false
+	visible = false
