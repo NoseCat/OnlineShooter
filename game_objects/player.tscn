@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://c6f8tvl8wxpp7" path="res://game_objects/player_camera_movement.gd" id="1_rpe43"]
 [ext_resource type="PackedScene" uid="uid://lx77p6dqb5vk" path="res://game_objects/particles.tscn" id="2_7o085"]
 [ext_resource type="Script" uid="uid://cfleitaasttcl" path="res://game_objects/health_bar.gd" id="3_hy5qn"]
-[ext_resource type="Script" uid="uid://ci5i52o28086t" path="res://game_objects/movement.gd" id="5_pyg5a"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_a4hy7"]
 
@@ -40,7 +39,7 @@ fov = 90.0
 script = ExtResource("1_rpe43")
 
 [node name="RayCast3D" type="RayCast3D" parent="Camera3D" unique_id=1074149861]
-target_position = Vector3(0, 0, -10)
+target_position = Vector3(0, 0, -20)
 
 [node name="Marker3D" type="Marker3D" parent="Camera3D" unique_id=965782319]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
@@ -101,5 +100,23 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, -
 text = "50
 "
 
-[node name="movement" type="Node3D" parent="." unique_id=1067830436]
-script = ExtResource("5_pyg5a")
+[node name="EscMenu" type="Control" parent="." unique_id=15793349]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Button" type="Button" parent="EscMenu" unique_id=1952386094]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 2.3430002
+anchor_bottom = 2.4160001
+offset_left = 477.0
+offset_top = 241.0
+offset_right = 585.27997
+offset_bottom = 302.36
+text = "Exit Lobby
+"
+
+[connection signal="pressed" from="EscMenu/Button" to="." method="_on_button_pressed"]

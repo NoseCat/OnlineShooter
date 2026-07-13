@@ -6,7 +6,7 @@ extends Control
 @onready var lobby_list = $VBoxContainer/ScrollContainer/LobbyList
 @onready var refresh_btn = $VBoxContainer/RefreshButton
 @onready var join_btn = $VBoxContainer/JoinButton
-
+@onready var create_btn = $VBoxContainer/CreateButtom
 
 var selected_lobby_id: int = -1
 
@@ -14,6 +14,7 @@ func _ready():
 	# Connect button signals
 	refresh_btn.pressed.connect(_on_refresh_pressed)
 	join_btn.pressed.connect(_on_join_pressed)
+	create_btn.pressed.connect(_on_create_pressed)
 	# Disable Join button until a lobby is selected
 	join_btn.disabled = true
 	# Auto‑refresh when the menu appears
@@ -83,12 +84,16 @@ func _on_lobby_button_pressed(btn):
 func _on_refresh_pressed():
 	_refresh_lobby_list()
 
+func _on_create_pressed():
+	main_node.rpc_id(1, "CreateLobby")
+	_refresh_lobby_list()
+
 # Join button pressed – calls the C# method 
 func _on_join_pressed():
 	if selected_lobby_id < 0:
 		return
 	
+	#main_node.ClearLobby()
 	main_node.rpc_id(1, "ConnectRoom",  multiplayer.get_unique_id(), selected_lobby_id )
 	print("Joining lobby ID: ", selected_lobby_id)
-	
 	visible = false

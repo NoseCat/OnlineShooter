@@ -27,9 +27,6 @@ public partial class Main
 
         CreateLobby();
         CreateLobby();
-        CreateLobby();
-        CreateLobby();
-        CreateLobby();
     }
 
     //us this to get proper id from LobbyData, otherwise we cant be certain of prper id
@@ -44,6 +41,7 @@ public partial class Main
         return -1;
     }
 
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void CreateLobby()
     {
         var lobbyDict = new Godot.Collections.Dictionary
@@ -89,13 +87,15 @@ public partial class Main
         var players = LobbyData[GetLobbyIndexById(lobby_id)]["Players"].AsGodotArray<int>();
         foreach (int player in players)
         {
-            if(player == player_id)
+            if (player == player_id)
                 continue;
             var spawnData = new Godot.Collections.Dictionary
             {
                 ["player_id"] = player,
                 ["lobby_id"] = lobby_id
             };
+            //var spawner = room.GetNode<MultiplayerSpawner>("MultiplayerSpawner");
+            //var playerobj = spawner.Spawn(spawnData);
             var playerobj = SpawnPlayerFunc(spawnData);
             playerobj.SetMultiplayerAuthority(player);
             room.GetNode<Node3D>("PlayerContainer").AddChild(playerobj);
@@ -110,7 +110,6 @@ public partial class Main
             ["player_id"] = player_id,
             ["lobby_id"] = lobby_id
         };
-
         return PlayerSpawner.Spawn(spawnData);
     }
 
@@ -125,16 +124,43 @@ public partial class Main
 
         RpcId(player_id, "SpawnLobby", player_id, lobby_id);
         for (int i = 0; i < 30; i++)
-            await ToSignal(GetTree(), "process_frame"); // I wish I knew what are we waiting for
-        foreach(Node playerObj in playersGlobal.Values)
-        {
-            playerObj.Rpc("update_visibility");
-        }
+            await ToSignal(GetTree(), "process_frame"); // I wish I knew what we are waiting for
         var player = SpawnPlayer(player_id, lobby_id);
         playersGlobal[player_id] = player;
-        player.Rpc("update_visibility");
+        foreach (Node gPlayer in playersGlobal.Values)
+            gPlayer.Rpc("update_visibility");
+
         player.Rpc("set_authority", player_id);
         player.RpcId(player_id, "set_up");
+
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private void DisconnectRoom(int id)
+    {
+        GD.Print("Exit Room");
+
+        foreach (Node gPlayer in playersGlobal.Values)
+            gPlayer.Rpc("update_visibility");
+        for (int i = 0; i < LobbyData.Count; i++)
+        {
+            var room = LobbyData[i];
+            var players = room["Players"].AsGodotArray<int>();
+            if (players.Contains(id))
+            {
+                players.Remove(id);
+                LobbyData[i] = room; // force sync
+                break;
+            }
+        }
+        if (playersGlobal.TryGetValue(id, out var playerNode))
+        {
+            playerNode.QueueFree();
+            playersGlobal.Remove(id);
+        }
+        foreach (Node gPlayer in playersGlobal.Values)
+            gPlayer.Rpc("update_visibility");
+        Rpc(nameof(DeletePlayerNode), id); //Some clients have player nodes that exist without mpSpawner consent
 
     }
 
@@ -146,8 +172,42 @@ public partial class Main
 
     private void OnPeerDisconnected(long id)
     {
-        Logger.Log("Server", $"Peer disconnected: {id} (did nothing)");
-        //players[id].QueueFree(); // for clients deletion is handled by MultiplayerSpawner
-        //players.Remove(id);
+        Logger.Log("Server", $"Peer disconnected: {id}");
+        DisconnectRoom((int)id);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
+    private void DeletePlayerNode(int player_id)
+    {
+        int lobbyIndex = -1;
+        for (int i = 0; i < LobbyData.Count; i++)
+        {
+            var players = LobbyData[i]["Players"].AsGodotArray<int>();
+            if (players.Contains(player_id))
+            {
+                lobbyIndex = i;
+                break;
+            }
+        }
+        if (lobbyIndex == -1)
+            return; // player not in any lobby
+
+        string roomName = LobbyData[lobbyIndex]["Name"].ToString();
+        Node room = GetNodeOrNull<Node>(roomName);
+        if (room == null)
+            return; //Player not in any room we have acces to
+
+        Node container = room.GetNode<Node>("PlayerContainer");
+        if (container == null)
+            return;
+
+        foreach (Node child in container.GetChildren())
+        {
+            if (child.Name == player_id.ToString())
+            {
+                child.QueueFree();
+                break;
+            }
+        }
     }
 }

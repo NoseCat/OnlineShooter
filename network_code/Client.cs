@@ -17,8 +17,29 @@ public partial class Main
 
         Multiplayer.MultiplayerPeer = peer;
         GD.Print("Connected!");
-        
+
     }
 
+    private async void DisconnectClient(int lobby_id)
+    {
+        RpcId(1, "DisconnectRoom", Multiplayer.GetUniqueId());
+        //for (int i = 0; i < 30; i++)
+            //await ToSignal(GetTree(), "process_frame");
+        GetNode<Control>("MainMenu").Visible = true;
+        ClearLobby();
+    }
 
+    private void ClearLobby()
+    {
+        foreach (var lobby_dict in LobbyData)
+        {
+            GD.Print(lobby_dict["Name"].ToString());
+            var room = GetNodeOrNull<Node>(lobby_dict["Name"].ToString());
+            if(room != null)
+            {
+                room.GetNode<MultiplayerSpawner>("MultiplayerSpawner").QueueFree();
+                room.QueueFree();
+            }
+        }
+    }
 }

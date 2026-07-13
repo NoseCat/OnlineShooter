@@ -43,6 +43,6 @@ text = "join
 layout_mode = 2
 text = "Refresh"
 
-[node name="CreateLobby" type="Button" parent="MainMenu/VBoxContainer" unique_id=884815312]
+[node name="CreateButtom" type="Button" parent="MainMenu/VBoxContainer" unique_id=884815312]
 layout_mode = 2
 text = "CreateLobby"

@@ -23,6 +23,11 @@ func set_authority(id: int):
 
 @rpc("any_peer", "call_local")
 func update_visibility():
+	for lobby in main.LobbyData:
+		var LobbyIPlayers = lobby["Players"]
+		for playerid in LobbyIPlayers:
+			sync.set_visibility_for(playerid, false)
+	
 	var lobby_index = main.GetLobbyIndexById(lobby_id)
 	var LobbyPlayers = main.LobbyData[lobby_index]["Players"]
 	for playerid in LobbyPlayers:
@@ -51,6 +56,14 @@ func _physics_process(delta: float) -> void:
 	#print(get_multiplayer_authority())
 	if not is_multiplayer_authority():
 		return
+	
+	if Input.is_action_just_pressed("Esc"):
+		$EscMenu.visible = !$EscMenu.visible
+		if ($EscMenu.visible):
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		else:
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+			
 	
 	# Add the gravity.
 	if not is_on_floor():
@@ -105,3 +118,6 @@ func spawn_particles(start: Vector3, end: Vector3):
 @rpc("any_peer", "call_local")
 func take_damage(value):
 	health -= value
+
+func _on_button_pressed() -> void:
+	main.DisconnectClient(lobby_id)
