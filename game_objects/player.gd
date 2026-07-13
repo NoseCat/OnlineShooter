@@ -15,39 +15,71 @@ var test
 
 @export var particles_scene: PackedScene 
 
+@rpc("authority", "call_local")
+func set_authority(id: int):
+	set_multiplayer_authority(id)
 
+@onready var sync = $MultiplayerSynchronizer
 
-func _ready() -> void:
-	#setting up Syncronizer so it knows what properties to copy
-	var sync = $MultiplayerSynchronizer
-	sync.root_path = ".."
-	var replication_config = SceneReplicationConfig.new()
-	replication_config.add_property(":global_position")
-	replication_config.add_property(":rotation")
-	replication_config.add_property(":health")
-	sync.replication_config = replication_config
-	
+@rpc("any_peer", "call_local")
+func update_visibility():
 	var lobby_index = main.GetLobbyIndexById(lobby_id)
 	var LobbyPlayers = main.LobbyData[lobby_index]["Players"]
 	for playerid in LobbyPlayers:
 		sync.set_visibility_for(playerid, true)
 	sync.set_visibility_for(1, true)
 
-func _physics_process(delta: float) -> void:
+@rpc("any_peer", "call_remote")
+func set_up():
+	$Camera3D.current = true
 
-	if not (name.to_int() == multiplayer.get_unique_id()):
+func _ready() -> void:
+	#setting up Syncronizer so it knows what properties to copy
+	sync.root_path = ".."
+	var replication_config = SceneReplicationConfig.new()
+	replication_config.add_property(":global_position")
+	replication_config.add_property(":rotation")
+	replication_config.add_property(":health")
+	sync.replication_config = replication_config
+	update_visibility()
+	
+	set_process_input(is_multiplayer_authority()) 
+	
+	#if is_multiplayer_authority():
+
+func _physics_process(delta: float) -> void:
+	#print(get_multiplayer_authority())
+	if not is_multiplayer_authority():
 		return
+	
+	# Add the gravity.
+	if not is_on_floor():
+		velocity += get_gravity() * delta
+	
+	# Handle jump.
+	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	var input_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	if direction:
+		velocity.x = direction.x * SPEED
+		velocity.z = direction.z * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.z = move_toward(velocity.z, 0, SPEED)
 		
 	if(Input.is_action_just_pressed("LMB")):
 		#rpc("take_damage", 1)
 		#take_damage(1)
 		rpc("click")
 	
+	move_and_slide()
 
 # Called when the local player clicks
 @rpc("any_peer", "call_local")
 func click():
-	if not (name.to_int() == multiplayer.get_unique_id()):
+	if not is_multiplayer_authority():
 		return  # only the owning client should trigger this
 
 	if(not $Camera3D/RayCast3D.is_colliding()):

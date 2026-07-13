@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public partial class Main
 {
-    //private readonly Dictionary<long, Node> players = new(); //global list of players
+    private readonly Dictionary<long, Node> playersGlobal = new(); //global list of players
 
     [Export]
     public Godot.Collections.Array<Godot.Collections.Dictionary> LobbyData { get; set; } = new();
@@ -52,7 +52,7 @@ public partial class Main
             ["Name"] = "Room_" + nextLobbyId,
             ["MaxPlayers"] = 5,
             ["Map"] = new[] { "mp_2_forts", "mp_tower" }[GD.Randi() % 2],
-            ["Players"] = new Godot.Collections.Array<int>(),  // use Array, not List
+            ["Players"] = new Godot.Collections.Array<int>()
         };
         LobbyData.Add(lobbyDict);
         var room = AddChildLobby(nextLobbyId);
@@ -86,11 +86,22 @@ public partial class Main
     {
         await ToSignal(LobbySynchronizer, "synchronized");
         var room = AddChildLobby(lobby_id);
-        //room.Multiplayer.MultiplayerPeer = Multiplayer.MultiplayerPeer;
-        //RpcId(1, "SpawnPlayer", player_id, lobby_id);
+        var players = LobbyData[GetLobbyIndexById(lobby_id)]["Players"].AsGodotArray<int>();
+        foreach (int player in players)
+        {
+            if(player == player_id)
+                continue;
+            var spawnData = new Godot.Collections.Dictionary
+            {
+                ["player_id"] = player,
+                ["lobby_id"] = lobby_id
+            };
+            var playerobj = SpawnPlayerFunc(spawnData);
+            playerobj.SetMultiplayerAuthority(player);
+            room.GetNode<Node3D>("PlayerContainer").AddChild(playerobj);
+        }
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private Node SpawnPlayer(int player_id, int lobby_id)
     {
         var PlayerSpawner = GetNode<MultiplayerSpawner>($"./{LobbyData[GetLobbyIndexById(lobby_id)]["Name"]}/MultiplayerSpawner");
@@ -114,10 +125,17 @@ public partial class Main
 
         RpcId(player_id, "SpawnLobby", player_id, lobby_id);
         for (int i = 0; i < 30; i++)
-            await ToSignal(GetTree(), "process_frame");
+            await ToSignal(GetTree(), "process_frame"); // I wish I knew what are we waiting for
+        foreach(Node playerObj in playersGlobal.Values)
+        {
+            playerObj.Rpc("update_visibility");
+        }
         var player = SpawnPlayer(player_id, lobby_id);
-        //player.SetMultiplayerAuthority(player_id, true); //MUST BE SET AFTER PLAYER SPAWNS OR 2^82 KITTENS WILL DIE INSTANTLY
-        //player.SetMultiplayerAuthority(1);
+        playersGlobal[player_id] = player;
+        player.Rpc("update_visibility");
+        player.Rpc("set_authority", player_id);
+        player.RpcId(player_id, "set_up");
+
     }
 
     //server does this when peer connects

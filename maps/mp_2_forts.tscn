@@ -4,11 +4,11 @@
 [ext_resource type="Material" uid="uid://bwhromut1cb3c" path="res://textures/new_standard_material_1.tres" id="2_nl8ml"]
 [ext_resource type="Texture2D" uid="uid://b1emwjhav5err" path="res://textures/f1e27d45-9a60-40a0-86cc-f6591bc41ee5.webp" id="3_nl8ml"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_7eea2"]
-size = Vector3(12.768738, 1, 3.313774)
+[sub_resource type="BoxShape3D" id="BoxShape3D_nl8ml"]
+size = Vector3(12.768738, 1, 15.615797)
 
 [sub_resource type="BoxMesh" id="BoxMesh_jup6i"]
-size = Vector3(12.768738, 1, 13.599228)
+size = Vector3(12.768738, 1, 15.615797)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wiq5k"]
 size = Vector3(5.408249, 3.578125, 13.599228)
@@ -21,6 +21,9 @@ size = Vector3(1.1992416, 7.178833, 13.599228)
 
 [sub_resource type="BoxMesh" id="BoxMesh_0iluv"]
 size = Vector3(1.1992416, 7.178833, 13.599228)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7eea2"]
+size = Vector3(12.768738, 1, 3.313774)
 
 [sub_resource type="BoxMesh" id="BoxMesh_5av50"]
 size = Vector3(12.768738, 1, 3.313774)
@@ -47,7 +50,7 @@ sky = SubResource("Sky_jup6i")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.0631464, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="geometry/StaticBody3D" unique_id=1916342224]
-shape = SubResource("BoxShape3D_7eea2")
+shape = SubResource("BoxShape3D_nl8ml")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="geometry/StaticBody3D/CollisionShape3D" unique_id=1734835315]
 material_override = ExtResource("1_5sg0j")
